@@ -155,7 +155,7 @@ class Predictor:
         # Global anomalies (entity-level) are predicted using aggregation of anomaly scores across all features
         # These predictions are used to evaluate performance, as true anomalies are labeled at entity-level
         # Evaluate using different threshold methods: brute-force, epsilon and peaks-over-treshold
-        e_eval = epsilon_eval(train_anomaly_scores, test_anomaly_scores, true_anomalies, reg_level=self.reg_level)
+        # e_eval = epsilon_eval(train_anomaly_scores, test_anomaly_scores, true_anomalies, reg_level=self.reg_level)
         p_eval = pot_eval(train_anomaly_scores, test_anomaly_scores, true_anomalies,
                           q=self.q, level=self.level, dynamic=self.dynamic_pot)
         if true_anomalies is not None:
@@ -163,39 +163,39 @@ class Predictor:
         else:
             bf_eval = {}
 
-        print(f"Results using epsilon method:\n {e_eval}")
+        # print(f"Results using epsilon method:\n {e_eval}")
         print(f"Results using peak-over-threshold method:\n {p_eval}")
         print(f"Results using best f1 score search:\n {bf_eval}")
 
-        for k, v in e_eval.items():
-            if not type(e_eval[k]) == list:
-                e_eval[k] = float(v)
+        # for k, v in e_eval.items():
+        #     if not type(e_eval[k]) == list:
+        #         e_eval[k] = float(v)
         for k, v in p_eval.items():
             if not type(p_eval[k]) == list:
                 p_eval[k] = float(v)
         for k, v in bf_eval.items():
             bf_eval[k] = float(v)
 
-        # Save
-        summary = {"epsilon_result": e_eval, "pot_result": p_eval, "bf_result": bf_eval}
+        # Save "epsilon_result": e_eval, "pot_result": p_eval,
+        summary = {"pot_result": p_eval,"bf_result": bf_eval}
         with open(f"{self.save_path}/{self.summary_file_name}", "w") as f:
             json.dump(summary, f, indent=2)
 
         # Save anomaly predictions made using epsilon method (could be changed to pot or bf-method)
-        if save_output:
-            global_epsilon = e_eval["threshold"]
-            test_pred_df["A_True_Global"] = true_anomalies
-            train_pred_df["Thresh_Global"] = global_epsilon
-            test_pred_df["Thresh_Global"] = global_epsilon
-            train_pred_df[f"A_Pred_Global"] = (train_anomaly_scores >= global_epsilon).astype(int)
-            test_preds_global = (test_anomaly_scores >= global_epsilon).astype(int)
-            # Adjust predictions according to evaluation strategy
-            if true_anomalies is not None:
-                test_preds_global = adjust_predicts(None, true_anomalies, global_epsilon, pred=test_preds_global)
-            test_pred_df[f"A_Pred_Global"] = test_preds_global
-
-            print(f"Saving output to {self.save_path}/<train/test>_output.pkl")
-            train_pred_df.to_pickle(f"{self.save_path}/train_output.pkl")
-            test_pred_df.to_pickle(f"{self.save_path}/test_output.pkl")
+        # if save_output:
+        #     global_epsilon = e_eval["threshold"]
+        #     test_pred_df["A_True_Global"] = true_anomalies
+        #     train_pred_df["Thresh_Global"] = global_epsilon
+        #     test_pred_df["Thresh_Global"] = global_epsilon
+        #     train_pred_df[f"A_Pred_Global"] = (train_anomaly_scores >= global_epsilon).astype(int)
+        #     test_preds_global = (test_anomaly_scores >= global_epsilon).astype(int)
+        #     # Adjust predictions according to evaluation strategy
+        #     if true_anomalies is not None:
+        #         test_preds_global = adjust_predicts(None, true_anomalies, global_epsilon, pred=test_preds_global)
+        #     test_pred_df[f"A_Pred_Global"] = test_preds_global
+        #
+        #     print(f"Saving output to {self.save_path}/<train/test>_output.pkl")
+        #     train_pred_df.to_pickle(f"{self.save_path}/train_output.pkl")
+        #     test_pred_df.to_pickle(f"{self.save_path}/test_output.pkl")
 
         print("-- Done.")

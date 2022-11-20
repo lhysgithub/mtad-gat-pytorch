@@ -60,6 +60,8 @@ class MTAD_GAT(nn.Module):
         self.gru = GRULayer(3 * n_features, gru_hid_dim, gru_n_layers, dropout)
         self.forecasting_model = Forecasting_Model(gru_hid_dim, forecast_hid_dim, out_dim, forecast_n_layers, dropout)
         self.recon_model = ReconstructionModel(window_size, gru_hid_dim, recon_hid_dim, out_dim, recon_n_layers, dropout)
+        self.norm = nn.BatchNorm1d(window_size)
+        # h_cat = self.norm(h_cat)
 
     def forward(self, x):
         # x shape (b, n, k): b - batch size, n - window size, k - number of features
@@ -70,6 +72,7 @@ class MTAD_GAT(nn.Module):
 
         h_cat = torch.cat([x, h_feat, h_temp], dim=2)  # (b, n, 3k)
 
+        # h_cat = self.norm(h_cat)
         _, h_end = self.gru(h_cat)
         h_end = h_end.view(x.shape[0], -1)   # Hidden state for last timestamp
 

@@ -140,12 +140,12 @@ def create_data_loaders(train_dataset, batch_size, val_split=0.1, shuffle=True, 
         train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
         val_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler)
 
-        print(f"train_size: {len(train_indices)}")
-        print(f"validation_size: {len(val_indices)}")
+        # print(f"train_size: {len(train_indices)}")
+        # print(f"validation_size: {len(val_indices)}")
 
     if test_dataset is not None:
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-        print(f"test_size: {len(test_dataset)}")
+        # print(f"test_size: {len(test_dataset)}")
 
     return train_loader, val_loader, test_loader
 
@@ -219,7 +219,7 @@ def adjust_anomaly_scores(scores, dataset, is_train, lookback):
     # Remove errors for time steps when transition to new channel (as this will be impossible for model to predict)
     if dataset.upper() not in ['SMAP', 'MSL']:
         return scores
-
+    return scores
     adjusted_scores = scores.copy()
     if is_train:
         md = pd.read_csv(f'./datasets/data/{dataset.lower()}_train_md.csv')

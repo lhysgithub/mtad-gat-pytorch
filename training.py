@@ -96,6 +96,7 @@ class Trainer:
             print(f"Init total val loss: {init_val_loss[2]:.5f}")
 
         print(f"Training model for {self.n_epochs} epochs..")
+        self.save(f"model.pt")
         train_start = time.time()
         for epoch in range(self.n_epochs):
             epoch_start = time.time()

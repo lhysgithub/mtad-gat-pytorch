@@ -231,8 +231,10 @@ class GRULayer(nn.Module):
         self.n_layers = n_layers
         self.dropout = 0.0 if n_layers == 1 else dropout
         self.gru = nn.GRU(in_dim, hid_dim, num_layers=n_layers, batch_first=True, dropout=self.dropout)
+        # self.norm = nn.BatchNorm1d(in_dim)
 
     def forward(self, x):
+        # x = self.norm(x)
         out, h = self.gru(x)
         out, h = out[-1, :, :], h[-1, :, :]  # Extracting from last layer
         return out, h
