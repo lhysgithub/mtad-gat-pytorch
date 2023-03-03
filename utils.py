@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import torch
+import json
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
 from torch.utils.data import DataLoader, Dataset, SubsetRandomSampler
 
@@ -102,6 +103,68 @@ def get_data(dataset, max_train_size=None, max_test_size=None,
     print("test set shape: ", test_data.shape)
     print("test set label shape: ", None if test_label is None else test_label.shape)
     return (train_data, None), (test_data, test_label)
+
+
+def get_dataset_np(config):
+    dataset = config.dataset
+    # if "WT" in dataset:
+    #     variable = config.group
+    #     train_df = pd.read_csv(f'./data/WT/{variable}/train_orig.csv', sep=",", header=None,
+    #                            dtype=np.float32).dropna(axis=0)
+    #     test_df = pd.read_csv(f'./data/WT/{variable}/test_orig.csv', sep=",", header=None,
+    #                           dtype=np.float32).dropna(axis=0)
+    #     train_df["y"] = np.zeros(train_df.shape[0])
+    #
+    #     # Get test anomaly labels
+    #     # test_labels = test_df[len(test_df)-1]
+    #     # del test_df[len(test_df)-1]
+    #     # test_df["y"] = test_labels
+    #     test_df.rename(columns={10:'y'},inplace=True)
+    #     return filter_data(train_df, test_df, config)
+    # el
+    if "SMD" in dataset:
+        variable = config.group
+        train_df = pd.read_csv(f'./data/ServerMachineDataset/train/machine-{variable}.txt', header=None, sep=",", dtype = np.float32)
+        test_df = pd.read_csv(f'./data/ServerMachineDataset/test/machine-{variable}.txt', header=None, sep=",", dtype=np.float32)
+        # train_df["y"] = np.zeros(train_df.shape[0])
+
+        # Get test anomaly labels
+        test_labels = np.genfromtxt(f'./data/ServerMachineDataset/test_label/machine-{variable}.txt', dtype=np.float32, delimiter=',')
+        # test_df["y"] = test_labels
+        return train_df.to_numpy(),test_df.to_numpy(),test_labels
+    elif "SMAP" in dataset:
+        variable = config.group
+        train = np.load(f'./data/SMAP/train/{variable}.npy')
+        train_df = pd.DataFrame(train)
+        # train_df["y"] = np.zeros(train_df.shape[0])
+
+        test = np.load(f'./data/SMAP/test/{variable}.npy')
+        test_df = pd.DataFrame(test)
+        test_label = np.zeros(len(test))
+        # test_df["y"] = np.zeros(test_df.shape[0])
+        # Set test anomaly labels manually
+        # test_df.iloc[4690:4774, -1] = 1
+
+        # Set test anomaly labels from files
+        labels = pd.read_csv(f'./data/SMAP/labeled_anomalies.csv', sep=",", index_col="chan_id")
+        label_str = labels.loc[variable, "anomaly_sequences"]
+        label_list = json.loads(label_str)
+        for i in label_list:
+            test_label[i[0]:i[1]+1] = 1
+        return train,test,test_label
+
+
+def get_data_from_source(args, normalize=False):
+    train_data, test_data, test_label = get_dataset_np(args)
+    if normalize:
+        train_data, scaler = normalize_data(train_data, scaler=None)
+        test_data, _ = normalize_data(test_data, scaler=scaler)
+
+    print("train set shape: ", train_data.shape)
+    print("test set shape: ", test_data.shape)
+    print("test set label shape: ", None if test_label is None else test_label.shape)
+    return (train_data, None), (test_data, test_label)
+
 
 
 class SlidingWindowDataset(Dataset):

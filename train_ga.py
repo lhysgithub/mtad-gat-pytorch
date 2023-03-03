@@ -81,7 +81,9 @@ def fitness_func(solution, solution_idx):
     if normal_loss != normal_loss:
         fitness = - 10000
     else:
-        fitness = f1 - normal_loss*5 #+ np.sum(solution) / len(solution)
+        # fitness = f1 - normal_loss*5 #+ np.sum(solution) / len(solution)
+        # fitness = f1# - normal_loss * 5  # + np.sum(solution) / len(solution)
+        fitness = f1 + np.sum(solution) / len(solution)
     if ga_input.best_fitness < fitness:
         ga_input.best_select = select
         ga_input.best_fitness = fitness
@@ -158,10 +160,12 @@ def main():
 
     if dataset == 'SMD':
         output_path = f'output/SMD/{args.group}'
-        (x_train, _), (x_test, y_test) = get_data(f"machine-{group_index}-{index}", normalize=normalize)
+        # (x_train, _), (x_test, y_test) = get_data(f"machine-{group_index}-{index}", normalize=normalize)
+        (x_train, _), (x_test, y_test) = get_data_from_source(args, normalize=normalize)
     elif dataset in ['MSL', 'SMAP']:
-        output_path = f'output/{dataset}'
-        (x_train, _), (x_test, y_test) = get_data(dataset, normalize=normalize)
+        output_path = f'output/{dataset}/{args.group}'
+        # (x_train, _), (x_test, y_test) = get_data(dataset, normalize=normalize)
+        (x_train, _), (x_test, y_test) = get_data_from_source(args, normalize=normalize)
     else:
         raise Exception(f'Dataset "{dataset}" not available.')
     # args.feature_numbers = x_train.shape[1]
